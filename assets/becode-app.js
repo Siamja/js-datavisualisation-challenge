@@ -13,86 +13,55 @@ What does this script do ?
 // Your scripting goes here...
 
 
-// creation div + graphique
+//création de la div qui contiendra le graph et l'insert dans le HTML:
+let divGraphique1 = document.createElement("div");
+let x = document.getElementById("mw-content-text");
+let table1 = document.getElementById("table1");
+x.insertBefore(divGraphique1,table1);
+divGraphique1.setAttribute("id","divTable1");
 
-let currentTable = document.getElementsByTagName('table')[0];
+//récupération des données et création d'un tableau:
 
-let newDiv = document.createElement("div");
-newDiv.id = "graphique1";
+//source des données de table1m
+let tbody = table1.getElementsByTagName("tbody");
+let tr = tbody[0].getElementsByTagName("tr");
 
-currentTable.parentNode.insertBefore(newDiv, currentTable);
+//tableau de données:
+let donnees=[];
+let fonctionTableau=()=>{
+    for (i=1;i<tr.length;i++){
+        let pays=[];
+        let th = tr[i].getElementsByTagName("th");
+        let div = th[0].getElementsByTagName("div");
+        let number = div[0].innerHTML;
+        pays.push(number);
+        let td = tr[i].getElementsByTagName("td");
+            for (y=0;y<td.length;y++){
+                let contenu = td[y].innerHTML;
+                pays.push(contenu);
+            }
+        donnees.push(pays);
+    }
+}
+fonctionTableau();
 
-//code Dimple du graphique
+// Création du dimple
+let svg = dimple.newSvg("#divTable1", 640, 600);
 
-var svg = dimple.newSvg("#graphique1", 500, 600,);
+let data = [];
+for (i=0;i<donnees.length;i++){
+    for (let y=2002;y<2013;y++){
+        let dataDetail = {"Année":y, "Infractions":donnees[i][y-2000], "Pays":donnees[i][1]};
+        if(dataDetail.Infractions != ':'){
+            data.push(dataDetail);
+        }
+    }
+}
 
-var data = [
-{ "Word":"Hello", "Awesomeness":2000 },
-{ "Word":"World", "Awesomeness":3000 }
-];
-var chart = new dimple.chart(svg, data);
-chart.addCategoryAxis("x", "Word");
-chart.addMeasureAxis("y", "Awesomeness");
-chart.addSeries(null, dimple.plot.bar);
+let chart = new dimple.chart(svg, data);
+chart.addCategoryAxis("x", "Année");
+chart.addMeasureAxis("y", "Infractions");
+chart.addSeries("Pays", dimple.plot.line);
+chart.addLegend(60, 10, 500, 120, "right");
+chart.setBounds('20px', "150px", "80%", "70%"); 
 chart.draw();
-
-let arrayCountry = [];
-let arrayStats = [];
-
-// Récupérer les pays
-
-let arrayPushCountry = () => { 
-  for (i = 0; i < 420; i++) {
-    if (isNaN(parseInt(d3.select("#table1").selectAll("tbody").selectAll("td")._groups[0][i].innerText)) && d3.select("#table1").selectAll("tbody").selectAll("td")._groups[0][i].innerText != ":") {
-      arrayCountry.push((d3.select("#table1").selectAll("tbody").selectAll("td")._groups[0][i].innerText));
-    }
-  }
-
-}
-
-// Récupérer les données
-
-let arrayPushStats = () => { 
-  for (i = 0; i < 420; i++) {
-
-    if (isNaN(parseFloat(d3.select("#table1").selectAll("tbody").selectAll("td")._groups[0][i].innerText)) == false) {
-      arrayStats.push(d3.select("#table1").selectAll("tbody").selectAll("td")._groups[0][i].innerText);
-
-    }
-  }
-}
-
-let arrayStatsByCountry = [];
-
-let statsByCountry = {
-  Pays: "",
-  a2002: "",
-  b2003: "",
-  c2004: "",
-  d2005: "",
-  e2006: "",
-  f2007: "",
-  g2008: "",
-  h2009: "",
-  i2010: "",
-  j2011: "",
-  k2012: "",
-}
-let testObject = () => {
-  for (i = 0; i < arrayCountry.length; i++) {
-    let testNewObj = Object.create(statsByCountry);
-    testNewObj.Pays = arrayCountry[i];
-    for (y = 0; y < arrayStats.length; y++){
-    testNewObj.a2002 = arrayStats[i];
-    }
-    arrayStatsByCountry.push(testNewObj);
-  }
-}
-
-arrayPushCountry();
-arrayPushStats();
-testObject();
-console.log(arrayCountry);
-console.log(arrayStats);
-console.log(arrayCountry[0]);
-console.log(arrayStatsByCountry);
